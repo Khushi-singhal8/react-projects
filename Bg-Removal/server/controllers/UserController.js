@@ -1,4 +1,8 @@
 import {Webhook} from 'svix'
+import UserModel from '../models/userModel.js'
+
+
+
 const clerkWebhooks = async (req, res) => {
 
     try {
@@ -30,10 +34,23 @@ const clerkWebhooks = async (req, res) => {
             }
             case "user.updated":{
 
+                const userData = {
+                    clerkId: data.id,
+                    email: data.email_addresses[0].email_address,
+                    firstName: data.first_name,
+                    lastName: data.last_name,
+                    photo: data.image_url
+                }
+
+                await userModel.findOneAndUpdate({clerkId: data.id},userData)
+
                 break;
             }
 
             case "user.deleted":{
+
+                    await userModel.findOneAndDelete({clerkId: data.id})
+                    res.json({})
 
                 break;
             }
@@ -47,3 +64,5 @@ const clerkWebhooks = async (req, res) => {
     }
     
 }
+
+export {clerkWebhooks}
