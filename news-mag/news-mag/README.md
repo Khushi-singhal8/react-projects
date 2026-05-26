@@ -1,0 +1,1 @@
+# NewsMag
