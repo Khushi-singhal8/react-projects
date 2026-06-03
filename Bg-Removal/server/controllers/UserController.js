@@ -65,4 +65,22 @@ const clerkWebhooks = async (req, res) => {
     
 }
 
-export {clerkWebhooks}
+
+
+const userCredits = async (req, res) => {
+
+    try{
+
+        const {clerkId} = req.body
+
+        const user = await UserModel.findOne({clerkId})
+
+        res.json({success: true,credits: user.credits})
+
+    } catch (error){
+        console.log(error.message)
+        res.json({success: false,message: error.message})
+    }
+}
+
+export {clerkWebhooks, userCredits}
