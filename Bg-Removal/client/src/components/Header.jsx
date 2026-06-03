@@ -1,7 +1,11 @@
 import React from 'react'
 import { assets } from '../assets/assets'
+import { useContext } from 'react'
+import { AppContext } from '../context/AppContext'
 
 const Header = () => {
+
+  const {removeBg} = useContext(AppContext)
   return (
 
     <div className='flex flex-col lg:flex-row items-center justify-between gap-16 px-4 mt-10 lg:px-44 sm:mt-20'>
@@ -33,7 +37,7 @@ const Header = () => {
         {/* Upload Button */}
         <div>
 
-          <input type="file" id="upload1" hidden />
+          <input onChange={e => removeBg(e.target.files[0])} type="file" accept="image/*" id="upload1" hidden />
 
           <label
             htmlFor="upload1"
