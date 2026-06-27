@@ -7,13 +7,19 @@ const removeBgImage = async (req, res) => {
     try {
         const { clerkId } = req.body
 
-        const user = await userModel.findOne({ clerkId })
+        let user = await userModel.findOne({ clerkId })
 
+        // Auto-create user if not found (webhook may not fire in local dev)
         if (!user) {
-            return res.json({ success: false, message: "User not found" });
+            user = await userModel.create({
+                clerkId,
+                email: `${clerkId}@placeholder.local`,
+                creditBalance: 5,
+            })
         }
-        if (user.creditsBalance === 0) {
-            return res.json({ success: false, message: `No Credit Balance` });
+
+        if (user.creditBalance <= 0) {
+            return res.json({ success: false, message: `No Credit Balance. Please purchase more credits.` });
         }
 
         const imagePath = req.file.path;
@@ -23,29 +29,30 @@ const removeBgImage = async (req, res) => {
         formData.append('image_file', imageFile);
 
         const { data } = await axios.post(
-            'https://clipdrop-api.co/remove-background/v1',  // ✅ correct URL
+            'https://clipdrop-api.co/remove-background/v1',
             formData,
             {
                 headers: {
                     'x-api-key': process.env.CLIPDROP_API,
-                    ...formData.getHeaders()  // ✅ required for FormData
+                    ...formData.getHeaders()
                 },
                 responseType: 'arraybuffer',
             }
         )
 
         const base64Image = Buffer.from(data, 'binary').toString('base64');
-        const resultImage = `data:image/png;base64,${base64Image}`  // ✅ clipdrop always returns png
+        const resultImage = `data:image/png;base64,${base64Image}`
 
-        await userModel.findByIdAndUpdate(user._id, { creditsBalance: user.creditsBalance - 1 })  // ✅ only one deduction
+        const newBalance = user.creditBalance - 1;
+        await userModel.findByIdAndUpdate(user._id, { creditBalance: newBalance })
 
-        // ✅ delete uploaded file after processing
+        // delete uploaded file after processing
         fs.unlink(imagePath, () => {})
 
         res.json({ 
             success: true, 
             resultImage, 
-            creditsBalance: user.creditsBalance - 1, 
+            creditsBalance: newBalance, 
             message: "Background removed successfully" 
         });
 

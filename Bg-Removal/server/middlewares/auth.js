@@ -15,7 +15,7 @@ const authUser = async (req, res, next) => {
         }
 
         req.body = req.body || {}  // ✅ safety fallback
-        req.body.clerkId = token_decode.clerkId
+        req.body.clerkId = token_decode.sub
         next()
 
     } catch (error) {

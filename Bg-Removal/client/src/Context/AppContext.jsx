@@ -51,7 +51,7 @@ const AppContextProvider = (props) => {
             const token = await getToken();
 
             const formData = new FormData();
-            image && formData.append('image', image);
+            formData.append('image', imageFile);
 
             const { data } = await axios.post(
                 `${backendUrl}/api/images/remove-bg`,
@@ -65,7 +65,7 @@ const AppContextProvider = (props) => {
             );
             if (data.success) {
                 setResultImage(data.resultImage);
-                data.creditBalance(data.creditsBalance);
+                setCredit(data.creditsBalance);
                 if (data.creditsBalance === 0) {
                     navigate('/buy')
                 }

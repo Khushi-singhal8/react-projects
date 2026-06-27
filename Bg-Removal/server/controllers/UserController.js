@@ -27,7 +27,7 @@ const clerkWebhooks = async (req, res) => {
                     photo: data.image_url
                 }
 
-                await User.create(userData)
+                await UserModel.create(userData)
                 res.json({})
 
                 break;
@@ -42,20 +42,22 @@ const clerkWebhooks = async (req, res) => {
                     photo: data.image_url
                 }
 
-                await userModel.findOneAndUpdate({clerkId: data.id},userData)
+                await UserModel.findOneAndUpdate({clerkId: data.id},userData)
+                res.json({})
 
                 break;
             }
 
             case "user.deleted":{
 
-                    await userModel.findOneAndDelete({clerkId: data.id})
+                    await UserModel.findOneAndDelete({clerkId: data.id})
                     res.json({})
 
                 break;
             }
 
         default:
+            res.json({})
             break;
         }
     } catch (error) {
@@ -73,9 +75,18 @@ const userCredits = async (req, res) => {
 
         const {clerkId} = req.body
 
-        const user = await UserModel.findOne({clerkId})
+        let user = await UserModel.findOne({clerkId})
 
-        res.json({success: true,credits: user.credits})
+        // Auto-create user if not found (webhook may not fire in local dev)
+        if (!user) {
+            user = await UserModel.create({
+                clerkId,
+                email: `${clerkId}@placeholder.local`,
+                creditBalance: 5,
+            })
+        }
+
+        res.json({success: true, credits: user.creditBalance})
 
     } catch (error){
         console.log(error.message)
